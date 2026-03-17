@@ -26,6 +26,11 @@ trap cleanup EXIT
 sleep 2
 
 echo "App local: http://127.0.0.1:${PORT}"
+
 echo "Gerando link público..."
+TUNNEL_PASSWORD="$(curl -fsS https://loca.lt/mytunnelpassword || true)"
+if [ -n "$TUNNEL_PASSWORD" ]; then
+  echo "Senha do túnel (se pedir password no celular): ${TUNNEL_PASSWORD}"
+fi
 
 npx --yes localtunnel --port "${PORT}"

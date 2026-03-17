@@ -43,3 +43,6 @@ Para teste rápido no celular, sem deploy, rode:
 ```
 
 Quando aparecer `your url is: https://...loca.lt`, abra esse link no celular.
+
+Se o navegador pedir **password**, use a senha exibida pelo script como:
+`Senha do túnel (se pedir password no celular): ...`

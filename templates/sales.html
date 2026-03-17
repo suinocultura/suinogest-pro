@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="panel form-panel">
+  <h2>Registrar venda</h2>
+  <form method="post">
+    <label>Suíno (opcional)
+      <select name="pig_id"><option value="">Sem vínculo</option>{% for p in pigs %}<option value="{{ p.id }}">{{ p.tag }}</option>{% endfor %}</select>
+    </label>
+    <label>Data<input type="date" name="sale_date" value="{{ today }}" required></label>
+    <label>Comprador<input name="buyer" required></label>
+    <label>Valor<input type="number" step="0.01" name="value" required></label>
+    <button class="btn" type="submit">Salvar</button>
+  </form>
+</section>
+<section class="panel">
+  <h2>Vendas</h2>
+  <table>
+    <thead><tr><th>Data</th><th>Suíno</th><th>Comprador</th><th>Valor</th></tr></thead>
+    <tbody>
+      {% for s in sales %}
+      <tr><td>{{ s.sale_date }}</td><td>{{ s.tag or '-' }}</td><td>{{ s.buyer }}</td><td>R$ {{ '%.2f'|format(s.value) }}</td></tr>
+      {% else %}<tr><td colspan="4">Sem vendas.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

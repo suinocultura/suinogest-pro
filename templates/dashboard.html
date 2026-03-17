@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="grid">
+  <article class="card"><h3>Total de suínos</h3><p>{{ totals.pigs }}</p></article>
+  <article class="card"><h3>Ativos</h3><p>{{ totals.active }}</p></article>
+  <article class="card"><h3>Custo ração</h3><p>R$ {{ '%.2f'|format(totals.feed_cost) }}</p></article>
+  <article class="card"><h3>Custo sanitário</h3><p>R$ {{ '%.2f'|format(totals.health_cost) }}</p></article>
+  <article class="card"><h3>Receita</h3><p>R$ {{ '%.2f'|format(totals.revenue) }}</p></article>
+  <article class="card"><h3>Margem</h3><p>R$ {{ '%.2f'|format(margin) }}</p></article>
+</section>
+
+<section class="panel">
+  <h2>Últimos cadastros</h2>
+  <table>
+    <thead><tr><th>Brinco</th><th>Raça</th><th>Sexo</th><th>Peso (kg)</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for pig in recent_pigs %}
+      <tr>
+        <td>{{ pig.tag }}</td><td>{{ pig.breed }}</td><td>{{ pig.sex }}</td><td>{{ pig.weight_kg }}</td><td>{{ pig.status }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">Sem registros.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

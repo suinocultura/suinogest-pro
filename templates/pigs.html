@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="panel">
+  <div class="row"><h2>Cadastro de suínos</h2><a class="btn" href="{{ url_for('pigs_new') }}">Novo suíno</a></div>
+  <table>
+    <thead><tr><th>Brinco</th><th>Raça</th><th>Sexo</th><th>Nascimento</th><th>Peso</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for pig in pigs %}
+      <tr>
+        <td>{{ pig.tag }}</td><td>{{ pig.breed }}</td><td>{{ pig.sex }}</td><td>{{ pig.birth_date }}</td><td>{{ pig.weight_kg }}</td><td>{{ pig.status }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">Nenhum suíno cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

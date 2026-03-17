@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from datetime import date
 from pathlib import Path
@@ -8,10 +9,10 @@ from typing import Any
 from flask import Flask, flash, g, redirect, render_template, request, url_for
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "suinogest.db"
+DB_PATH = Path(os.getenv("DATABASE_PATH", BASE_DIR / "suinogest.db"))
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "suinogest-secret-key"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "suinogest-secret-key")
 
 
 def get_db() -> sqlite3.Connection:
@@ -30,6 +31,7 @@ def close_db(_: Any) -> None:
 
 
 def init_db() -> None:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(DB_PATH)
     db.executescript(
         """
@@ -206,6 +208,9 @@ def sales() -> str:
     return render_template("sales.html", sales=rows, pigs=pigs, today=date.today().isoformat())
 
 
+init_db()
+
+
 if __name__ == "__main__":
-    init_db()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.getenv("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=False)

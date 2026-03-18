@@ -34,15 +34,20 @@ Este repositório já inclui `render.yaml` com configuração pronta para deploy
   `https://suinogest-pro.onrender.com`
 - O banco SQLite ficará persistido em disco (`/var/data/suinogest.db`).
 
-## Link público temporário (alternativo)
+## Link público temporário (celular)
 
-Para teste rápido no celular, sem deploy, rode:
+Para teste rápido no celular, sem deploy:
 
 ```bash
 ./scripts/public_link.sh
 ```
 
-Quando aparecer `your url is: https://...loca.lt`, abra esse link no celular.
+O script sobe o app + túnel em background e mostra:
+- Link público `https://...loca.lt`
+- Senha do túnel (se o navegador pedir)
 
-Se o navegador pedir **password**, use a senha exibida pelo script como:
-`Senha do túnel (se pedir password no celular): ...`
+Para encerrar depois:
+
+```bash
+./scripts/stop_public_link.sh
+```

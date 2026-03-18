@@ -2,13 +2,20 @@
 set -euo pipefail
 
 PORT="${PORT:-5000}"
+SUBDOMAIN="${SUBDOMAIN:-suinogest-$(date +%H%M%S)}"
 APP_LOG="/tmp/suinogest-app.log"
 TUNNEL_LOG="/tmp/suinogest-tunnel.log"
 APP_PID_FILE="/tmp/suinogest-app.pid"
 TUNNEL_PID_FILE="/tmp/suinogest-tunnel.pid"
+PUBLIC_URL="https://${SUBDOMAIN}.localhost.run"
 
-if ! command -v npx >/dev/null 2>&1; then
-  echo "Erro: npx não encontrado. Instale Node.js para gerar link público."
+if ! command -v ssh >/dev/null 2>&1; then
+  echo "Erro: ssh não encontrado."
+  exit 1
+fi
+
+if ! command -v nc >/dev/null 2>&1; then
+  echo "Erro: nc (netcat) não encontrado."
   exit 1
 fi
 
@@ -37,30 +44,38 @@ if ! kill -0 "$APP_PID" 2>/dev/null; then
   exit 1
 fi
 
-nohup npx --yes localtunnel --port "$PORT" > "$TUNNEL_LOG" 2>&1 &
+nohup ssh \
+  -o "ProxyCommand=nc -X connect -x proxy:8080 %h %p" \
+  -o StrictHostKeyChecking=no \
+  -o ServerAliveInterval=30 \
+  -o ExitOnForwardFailure=yes \
+  -N \
+  -R "${SUBDOMAIN}:80:localhost:${PORT}" \
+  nokey@localhost.run > "$TUNNEL_LOG" 2>&1 &
+
 TUNNEL_PID=$!
 echo "$TUNNEL_PID" > "$TUNNEL_PID_FILE"
 
-URL=""
-for _ in $(seq 1 30); do
-  URL="$(sed -n 's/.*your url is: \(https:\/\/.*\)/\1/p' "$TUNNEL_LOG" | tail -n1)"
-  if [ -n "$URL" ]; then
+sleep 2
+if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+  echo "Erro: túnel não iniciou. Veja log: $TUNNEL_LOG"
+  exit 1
+fi
+
+READY=""
+for _ in $(seq 1 20); do
+  if curl -I -s "$PUBLIC_URL" | head -n 1 | rg -q "200|301|302"; then
+    READY="yes"
     break
   fi
   sleep 1
 done
 
-if [ -z "$URL" ]; then
-  echo "Erro: não consegui obter URL do túnel. Veja log: $TUNNEL_LOG"
-  exit 1
+if [ -z "$READY" ]; then
+  echo "Aviso: túnel criado, mas a URL ainda não respondeu. Tente novamente em alguns segundos."
 fi
-
-TUNNEL_PASSWORD="$(curl -fsS https://loca.lt/mytunnelpassword || true)"
 
 echo "App local: http://127.0.0.1:${PORT}"
-echo "Link público: ${URL}"
-if [ -n "$TUNNEL_PASSWORD" ]; then
-  echo "Senha do túnel (se pedir password no celular): ${TUNNEL_PASSWORD}"
-fi
+echo "Link público: ${PUBLIC_URL}"
 echo "PID app: ${APP_PID} | PID túnel: ${TUNNEL_PID}"
 echo "Para encerrar: ./scripts/stop_public_link.sh"
